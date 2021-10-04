@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn">
+
+    <Appenders>
+        <!-- ***** Inicio Appender para Consola ***** -->
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss,SSS}] [%highlight{%level}{ERROR=red, WARN=yellow, INFO=green}] [%t]: %logger{36}.%M:L%L - %msg%n" disableAnsi="false"/>
+        </Console>
+        <!-- ***** Fin Appender para Consola ***** -->
+
+        <Routing name="RoutingAppender">
+            <Routes pattern="${ctx:logFileName}">
+                <Route>
+                    <!-- ***** Inicio Appender file Normal Log ***** -->
+                    <RollingFile
+                            name="fileLogger-${ctx:logFileName}"
+                            fileName="${ctx:logPath}/${ctx:logFileName}_TRAZADO.log"
+                            filePattern="${ctx:logPath}/${ctx:logFileName}_TRAZADO.%i.log.gz"
+                            ignoreExceptions="false">
+                        <PatternLayout>
+                            <pattern>[%d{yyyy-MM-dd HH:mm:ss,SSS}] {%F:%t:Lin%L} [%M] %-3level : %m%n</pattern>
+                        </PatternLayout>
+                        <Policies>
+                            <SizeBasedTriggeringPolicy size="100MB" />
+                        </Policies>
+                        <DefaultRolloverStrategy max="5" />
+                    </RollingFile>
+                    <!-- ***** Fin Appender file Normal Log ***** -->
+                </Route>
+
+                <!-- By having this set to ${ctx:logFileName} it will match when filename
+                     is not set in the context -->
+                <Route ref="console" key="${ctx:logFileName}"/>
+            </Routes>
+        </Routing>
+        <Routing name="RoutingAppenderELK">
+            <Routes pattern="${ctx:logFileNameELK}">
+                <Route>
+                    <!-- ***** Inicio Appender fileLoggerGetConfigNoEstruct: Clase getConfigNoEstruct ***** -->
+                    <RollingFile
+                            name="fileLogger-ELK-${ctx:logFileNameELK}"
+                            fileName="${ctx:logPath}/${ctx:logFileNameELK}.txt"
+                            filePattern="${ctx:logPath}/${ctx:logFileNameELK}.%i.txt.gz"
+                            ignoreExceptions="false">
+                        <PatternLayout>
+                            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss-SSS}${ctx:SEPARADOR_ELK}%m%n</pattern>
+                        </PatternLayout>
+                        <Policies>
+                            <SizeBasedTriggeringPolicy size="100MB" />
+                        </Policies>
+                        <DefaultRolloverStrategy max="5" />
+                    </RollingFile>
+                    <!-- ***** Fin Appender fileLoggerGetConfigNoEstruct: Clase getConfigNoEstruct ***** -->
+                </Route>
+
+                <!-- By having this set to ${ctx:logFileName} it will match when filename
+                     is not set in the context -->
+                <Route ref="console" key="${ctx:logFileNameELK}"/>
+            </Routes>
+        </Routing>
+
+    </Appenders>
+
+    <Loggers>
+        <Logger name="pe.com.claro" level="info" additivity="false">
+            <AppenderRef ref="RoutingAppender"/>
+            <AppenderRef ref="RoutingAppenderELK"/>
+        </Logger>
+        <Root level="debug" additivity="false">
+            <appender-ref ref="console" />
+        </Root>
+    </Loggers>
+</Configuration>
